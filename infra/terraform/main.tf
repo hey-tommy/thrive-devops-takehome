@@ -3,26 +3,51 @@
 // Reviewer notes: version pinning, remote backend stub, and module structure
 
 terraform {
+  required_version = ">= 1.0"
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "~> 5.40"
+      version = ">= 5.0"
+    }
+    kubernetes = {
+      source  = "hashicorp/kubernetes"
+      version = ">= 2.10"
+    }
+    helm = {
+      source  = "hashicorp/helm"
+      version = ">= 2.5"
     }
   }
-  required_version = ">= 1.6.0"
-  # Uncomment and configure for remote state in production
-  # backend "s3" {
-  #   bucket = "my-terraform-state-bucket"
-  #   key    = "thrive-devops-takehome/terraform.tfstate"
-  #   region = "us-east-1"
-  #   encrypt = true
-  #   dynamodb_table = "my-terraform-lock-table"
-  # }
 }
 
 provider "aws" {
   region = var.aws_region
   # profile = var.aws_profile # Uncomment if using a named profile
+}
+
+# Configure Kubernetes provider to connect to EKS cluster
+provider "kubernetes" {
+  host                   = module.eks.cluster_endpoint
+  cluster_ca_certificate = base64decode(module.eks.cluster_certificate_authority_data)
+
+  exec {
+    api_version = "client.authentication.k8s.io/v1beta1"
+    args        = ["eks", "get-token", "--cluster-name", module.eks.cluster_name]
+    command     = "aws"
+  }
+}
+
+# Configure Helm provider to use the Kubernetes provider configuration
+provider "helm" {
+  kubernetes {
+    host                   = module.eks.cluster_endpoint
+    cluster_ca_certificate = base64decode(module.eks.cluster_certificate_authority_data)
+    exec {
+      api_version = "client.authentication.k8s.io/v1beta1"
+      args        = ["eks", "get-token", "--cluster-name", module.eks.cluster_name]
+      command     = "aws"
+    }
+  }
 }
 
 // --- Infrastructure Modules ---
@@ -55,7 +80,7 @@ module "vpc" {
 
 module "eks" {
   source  = "terraform-aws-modules/eks/aws"
-  version = "~> 20.0"
+  version = "20.13.0" # Pin to a specific recent v20.x
 
   cluster_name    = "thrive-devops-eks"
   cluster_version = "1.29"
@@ -257,6 +282,32 @@ resource "aws_iam_policy" "external_secrets_policy" {
 resource "aws_iam_role_policy_attachment" "external_secrets_attach" {
   role       = aws_iam_role.external_secrets_role.name
   policy_arn = aws_iam_policy.external_secrets_policy.arn
+}
+
+# --- Helm Releases ---
+
+# Deploy kube-prometheus-stack for monitoring
+resource "helm_release" "prometheus_stack" {
+  name       = "thrive-monitoring" # Name of the Helm release
+  repository = "https://prometheus-community.github.io/helm-charts"
+  chart      = "kube-prometheus-stack"
+  version    = "58.1.0" # Specify a recent, stable version
+
+  namespace        = "monitoring" # Deploy into the monitoring namespace
+  create_namespace = true         # Create the namespace if it doesn't exist
+
+  # Use the existing values file
+  values = [
+    file("${path.module}/../../monitoring/helm-values.yaml")
+  ]
+
+  # Ensure Helm provider is configured and depends on EKS cluster being ready
+  depends_on = [
+    module.eks.cluster_id # Or another resource indicating cluster readiness
+  ]
+
+  # Timeout for Helm operations
+  timeout = 600 # 10 minutes
 }
 
 # --- Output Stubs ---

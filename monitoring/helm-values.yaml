@@ -8,4 +8,53 @@ grafana:
   persistence:
     enabled: false
 
+# Add basic alerting rules
+prometheus:
+  prometheusSpec:
+    additionalPrometheusRulesMap:
+      custom-rules: |
+        groups:
+        - name: custom-kubernetes-alerts
+          rules:
+          - alert: KubePodCrashLooping
+            expr: rate(kube_pod_container_status_restarts_total{job="kube-state-metrics", namespace!~"kube-system|monitoring"}[5m]) * 60 * 5 > 3
+            for: 5m
+            labels:
+              severity: warning
+            annotations:
+              summary: Pod {{ $labels.pod }} in namespace {{ $labels.namespace }} is crash looping.
+              description: Pod {{ $labels.pod }} in namespace {{ $labels.namespace }} has restarted more than 3 times in the last 5 minutes.
+
+          - alert: NodeCPUUsageHigh
+            expr: 100 - (avg by (instance) (irate(node_cpu_seconds_total{job="node-exporter",mode="idle"}[5m])) * 100) > 80
+            for: 5m
+            labels:
+              severity: warning
+            annotations:
+              summary: High CPU usage detected on node {{ $labels.instance }}.
+              description: Node {{ $labels.instance }} CPU usage is above 80% for 5 minutes.
+
+          - alert: NodeMemoryUsageHigh
+            expr: (node_memory_MemTotal_bytes{job="node-exporter"} - node_memory_MemAvailable_bytes{job="node-exporter"}) / node_memory_MemTotal_bytes{job="node-exporter"} * 100 > 80
+            for: 5m
+            labels:
+              severity: warning
+            annotations:
+              summary: High Memory usage detected on node {{ $labels.instance }}.
+              description: Node {{ $labels.instance }} Memory usage is above 80% for 5 minutes.
+
+# Configure Alertmanager with a default null receiver
+alertmanager:
+  config:
+    global:
+      resolve_timeout: 5m
+    route:
+      group_by: ['job', 'alertname', 'severity']
+      group_wait: 30s
+      group_interval: 5m
+      repeat_interval: 1h
+      receiver: 'null'  # Default receiver
+    receivers:
+    - name: 'null' # A receiver that does nothing, effectively silencing alerts for demo
+
 # Other components (prometheus, alertmanager, nodeExporter, kubeStateMetrics) use defaults.
