@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: thrive-app-deployment # Name of the deployment
+  namespace: default           # Namespace where the deployment will run
+  labels:
+    app: thrive-app          # Label for identifying resources related to this app
+spec:
+  replicas: 2 # Start with 2 replicas for basic availability
+  selector:
+    matchLabels:
+      app: thrive-app
+  template:
+    metadata:
+      labels:
+        app: thrive-app
+    spec:
+      containers:
+      - name: thrive-app-container
+        # IMPORTANT: Replace ':latest' with the actual image tag during CI/CD or Argo Rollouts
+        # The ECR repo URL is fetched from Terraform outputs
+        image: "${ecr_repository_url}:latest" 
+        ports:
+        - containerPort: 3000 # Port the Node.js app listens on (as defined in app/server.js)
+        envFrom:
+        - secretRef:
+            name: demo-app-k8s-secrets # Reference the Kubernetes Secret created by External Secrets
+        resources:
+          # Define resource requests and limits for better scheduling and stability
+          requests:
+            memory: "64Mi"  # Minimum memory required
+            cpu: "100m"   # Minimum CPU required (0.1 core)
+          limits:
+            memory: "128Mi" # Maximum memory allowed
+            cpu: "250m"   # Maximum CPU allowed (0.25 core)
+        # Add readiness and liveness probes for health checks
+        readinessProbe:
+          httpGet:
+            path: /healthz # Assuming a /healthz endpoint exists in your Node.js app
+            port: 3000
+          initialDelaySeconds: 5 # Wait 5 seconds before first probe
+          periodSeconds: 10     # Check every 10 seconds
+        livenessProbe:
+          httpGet:
+            path: /healthz # Assuming a /healthz endpoint exists
+            port: 3000
+          initialDelaySeconds: 15 # Wait 15 seconds before first probe
+          periodSeconds: 20     # Check every 20 seconds
