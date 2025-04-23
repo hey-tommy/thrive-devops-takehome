@@ -1,0 +1,46 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: thrive-devops-app-rollout # Rollout name
+  namespace: default # Assuming deployment in default namespace
+  labels:
+    app: thrive-devops-app # Consistent label
+spec:
+  replicas: 2 # Start with 2 replicas
+  selector:
+    matchLabels:
+      app: thrive-devops-app # Selects pods managed by this rollout
+  template: # Pod template
+    metadata:
+      labels:
+        app: thrive-devops-app # Pod label
+      annotations:
+        # Add a timestamp to force rollout update when image tag ('latest') doesn't change
+        updatedTimestamp: "20250423090600" # Use current time or similar
+    spec:
+      containers:
+      - name: thrive-devops-app # Container name
+        image: 329178086857.dkr.ecr.us-east-1.amazonaws.com/thrive-devops-app:latest # ECR Image URI
+        ports:
+        - containerPort: 3000 # Port the app listens on
+        readinessProbe: # Basic readiness probe using the /healthz endpoint
+          httpGet:
+            path: /healthz
+            port: 3000
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        livenessProbe: # Basic liveness probe using the /healthz endpoint
+          httpGet:
+            path: /healthz
+            port: 3000
+          initialDelaySeconds: 15
+          periodSeconds: 20
+  strategy:
+    canary: # Define canary strategy
+      steps:
+      - setWeight: 20 # Send 20% traffic to canary
+      - pause: {} # Pause for manual verification (or automated analysis)
+      - setWeight: 50 # Send 50% traffic
+      - pause: {duration: 60s} # Pause for 60 seconds
+      # ... more steps as needed
+      # Final step implicitly promotes canary to stable
