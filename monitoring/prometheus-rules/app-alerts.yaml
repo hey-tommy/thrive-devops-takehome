@@ -1,0 +1,23 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: app-pod-alerts
+  namespace: monitoring # Must be the namespace where prometheus-operator is running
+  labels:
+    # This label must match the ruleSelector in the Prometheus CRD spec
+    # In kube-prometheus-stack, it often defaults to release=<helm-release-name>
+    # Check your Prometheus CR or stack values if unsure. Using a common default.
+    release: thrive-monitoring
+spec:
+  groups:
+  - name: application.rules
+    rules:
+    - alert: HighPodRestartRate
+      expr: rate(kube_pod_container_status_restarts_total{namespace="default", pod=~"thrive-devops-app-.*"}[5m]) * 60 * 5 > 0
+      for: 1m # Alert only if condition holds for 1 minute
+      labels:
+        severity: warning
+        namespace: default
+      annotations:
+        summary: "High pod restart rate detected for {{ $labels.pod }}"
+        description: "Pod {{ $labels.pod }} in namespace {{ $labels.namespace }} has been restarting frequently over the last 5 minutes."
