@@ -8,23 +8,23 @@ This document provides a **granular, sequenced breakdown** of work items aligned
 
 These work items must be completed in order — they represent the foundation of the system.
 
-| #  | Work Item                                             | Output / File(s)                            | Blocking           | Stub / Fallback Plan                                   | Est. Time |
-|----|-------------------------------------------------------|---------------------------------------------|--------------------|--------------------------------------------------------|-----------|
-| 0  | Create basic Node.js "Hello World" app                | `app/server.js`                             | —                  | Minimal stub with console log                          | 5 min     |
-| 1  | Create `main.tf` (Terraform root module)              | `infra/terraform/main.tf`                   | —                  | —                                                      | 2 min     |
-| 2  | Add VPC module (explicit note: covers VPC req)        | `infra/terraform/modules/vpc.tf`            | 1                  | Use AWS default VPC (commented)                        | 10 min    |
-| 3  | Add EKS module + node group (explicit: auto-scaling)  | `infra/terraform/modules/eks.tf`            | 2                  | Fallback to EC2 + Docker Compose, stub note in README  | 20–30 min |
-| 4  | Add IAM roles + IRSA support                          | `infra/terraform/modules/iam.tf`            | 2                  | Use static `accessKey` if time-crunched (unsafe demo)  | 10–15 min |
-| 5  | Add ECR resource                                      | `infra/terraform/modules/ecr.tf`            | 1                  | Push to Docker Hub instead                             | 5–10 min  |
-| 6  | Run `terraform apply`, capture outputs                | `infra/terraform/outputs.tf`                | 1–5                | N/A                                                    | 5–10 min  |
-| 7  | Update kubeconfig from Terraform output               | `aws eks update-kubeconfig ...`             | 3, 6               | —                                                      | 2 min     |
-| 8a | Build Docker image locally                            | `app/Dockerfile`                            | 0                  | —                                                      | 5 min     |
-| 8b | Push image to ECR                                     | ECR repo                                    | 5, 7, 8a           | Push locally + tag manually                            | 5–10 min  |
-| 9  | Install Argo Rollouts controller                      | `k8s/rollouts/controller.yaml`              | 7                  | Fallback to standard K8s deployment                    | 5–10 min  |
-|10  | Define base rollout manifest (add K8s probes)         | `k8s/rollouts/app-rollout.yaml`             | 8b, 9              | Stub rollout steps, use static spec                    | 10 min    |
-|11  | Create base service + ingress (explicit: load balancer)| `k8s/base/service.yaml`, `ingress.yaml`   | 10                 | Stub ingress with comment; use `NodePort`              | 10 min    |
-|12  | Implement `/healthz` endpoint in app & K8s probes     | `app/server.js`, `k8s/rollouts/app-rollout.yaml` | 0, 10, 11      | Static response, stub probe config                     | 5–10 min  |
-|13  | Apply rollout + base manifests                        | `kubectl apply -f k8s/`                     | 10–12              | —                                                      | 5–10 min  |
+| #   | Work Item                                               | Output / File(s)                                 | Blocking  | Stub / Fallback Plan                                  | Est. Time |
+| --- | ------------------------------------------------------- | ------------------------------------------------ | --------- | ----------------------------------------------------- | --------- |
+| 0   | Create basic Node.js "Hello World" app                  | `app/server.js`                                  | —         | Minimal stub with console log                         | 5 min     |
+| 1   | Create `main.tf` (Terraform root module)                | `infra/terraform/main.tf`                        | —         | —                                                     | 2 min     |
+| 2   | Add VPC module (explicit note: covers VPC req)          | `infra/terraform/modules/vpc.tf`                 | 1         | Use AWS default VPC (commented)                       | 10 min    |
+| 3   | Add EKS module + node group (explicit: auto-scaling)    | `infra/terraform/modules/eks.tf`                 | 2         | Fallback to EC2 + Docker Compose, stub note in README | 20–30 min |
+| 4   | Add IAM roles + IRSA support                            | `infra/terraform/modules/iam.tf`                 | 2         | Use static `accessKey` if time-crunched (unsafe demo) | 10–15 min |
+| 5   | Add ECR resource                                        | `infra/terraform/modules/ecr.tf`                 | 1         | Push to Docker Hub instead                            | 5–10 min  |
+| 6   | Run `terraform apply`, capture outputs                  | `infra/terraform/outputs.tf`                     | 1–5       | N/A                                                   | 5–10 min  |
+| 7   | Update kubeconfig from Terraform output                 | `aws eks update-kubeconfig ...`                  | 3, 6      | —                                                     | 2 min     |
+| 8a  | Build Docker image locally                              | `app/Dockerfile`                                 | 0         | —                                                     | 5 min     |
+| 8b  | Push image to ECR                                       | ECR repo                                         | 5, 7, 8a  | Push locally + tag manually                           | 5–10 min  |
+| 9   | Install Argo Rollouts controller                        | `k8s/rollouts/controller.yaml`                   | 7         | Fallback to standard K8s deployment                   | 5–10 min  |
+| 10  | Define base rollout manifest (add K8s probes)           | `k8s/rollouts/app-rollout.yaml`                  | 8b, 9     | Stub rollout steps, use static spec                   | 10 min    |
+| 11  | Create base service + ingress (explicit: load balancer) | `k8s/base/service.yaml`, `ingress.yaml`          | 10        | Stub ingress with comment; use `NodePort`             | 10 min    |
+| 12  | Implement `/healthz` endpoint in app & K8s probes       | `app/server.js`, `k8s/rollouts/app-rollout.yaml` | 0, 10, 11 | Static response, stub probe config                    | 5–10 min  |
+| 13  | Apply rollout + base manifests                          | `kubectl apply -f k8s/`                          | 10–12     | —                                                     | 5–10 min  |
 
 ---
 

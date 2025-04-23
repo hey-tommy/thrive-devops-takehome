@@ -1,6 +1,6 @@
-## 🧭 ADR: Canary + EKS (Argo Rollouts)
+# ADR-001: Canary + EKS (Argo Rollouts)
 
-### Decision Summary
+## Decision Summary
 
 Selected architecture path: **Canary + EKS using Argo Rollouts**
 
@@ -8,7 +8,7 @@ This was not the simplest option — it was chosen to demonstrate progressive de
 
 ---
 
-### Why Not Blue-Green?
+## Why Not Blue-Green?
 
 - **Limited future extensibility**: Blue-Green deployment is binary and rigid. It lacks phased rollout semantics and does not support nuanced traffic control.
 - **Poor reusability**: Much of the configuration (e.g., CodeDeploy setup, target group juggling) is non-transferable to Canary or K8s patterns.
@@ -16,7 +16,7 @@ This was not the simplest option — it was chosen to demonstrate progressive de
 
 ---
 
-### Why Not ALB-based Canary?
+## Why Not ALB-based Canary?
 
 - **Shallow control**: ALB-weighted routing lacks version awareness, rollback automation, and rollout phases.
 - **Non-native**: Traffic percentages are opaque; no way to describe or observe rollout state via declarative tools.
@@ -25,7 +25,7 @@ This was not the simplest option — it was chosen to demonstrate progressive de
 
 ---
 
-### Why Canary + EKS (Argo Rollouts) Wins
+## Why Canary + EKS (Argo Rollouts) Wins
 
 - **Built for progressive delivery**: Native phased rollouts, rollback control, analysis templates, pause/resume steps.
 - **Declarative & auditable**: Fully GitOps-compatible via CRDs; changes can be versioned, reviewed, and promoted.
@@ -35,7 +35,7 @@ This was not the simplest option — it was chosen to demonstrate progressive de
 
 ---
 
-### Comparison Table
+## Comparison Table
 
 | Pattern                | Terraform Complexity | Reuse for A/B | Reviewer "Wow" | Future-Ready |
 |------------------------|----------------------|---------------|----------------|--------------|
@@ -45,7 +45,7 @@ This was not the simplest option — it was chosen to demonstrate progressive de
 
 ---
 
-### Final Note
+## Final Note
 
 This decision prioritizes **senior-level system design and forward extensibility**. It trades raw implementation speed for clarity, narrative strength, and orchestration depth — producing not just a deliverable, but a story.
 
