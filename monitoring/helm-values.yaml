@@ -49,12 +49,17 @@ alertmanager:
     global:
       resolve_timeout: 5m
     route:
-      group_by: ['job', 'alertname', 'severity']
+      group_by: ['job']
       group_wait: 30s
       group_interval: 5m
       repeat_interval: 1h
-      receiver: 'null'  # Default receiver
+      receiver: 'slack-default' # Default receiver
     receivers:
     - name: 'null' # A receiver that does nothing, effectively silencing alerts for demo
+    - name: 'slack-default' # Define the Slack receiver
+      slack_configs:
+      - api_url: 'https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX' # Placeholder URL
+        channel: '#alerts' # Example channel
+        send_resolved: true
 
 # Other components (prometheus, alertmanager, nodeExporter, kubeStateMetrics) use defaults.
