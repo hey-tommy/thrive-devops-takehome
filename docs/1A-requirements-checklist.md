@@ -30,7 +30,7 @@ This checklist includes all **explicit**, **implicit**, and **bonus** requiremen
 ### 🟡 Monitoring & Alerting (Explicit)
 
 - [ ] Expose **basic metrics** (CPU, memory, req/sec)
-- [ ] Set up **basic alerting** (email or Slack webhook acceptable)
+- [x] Set up **basic alerting** (email or Slack webhook acceptable)
 
 ---
 

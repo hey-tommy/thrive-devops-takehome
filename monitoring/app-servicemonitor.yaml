@@ -1,0 +1,18 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: thrive-devops-app-monitor # Name for the ServiceMonitor
+  namespace: default # Namespace where the application Service is running
+  labels:
+    release: thrive-monitoring # IMPORTANT: Label must match the Helm release name for Prometheus to discover it
+spec:
+  selector:
+    matchLabels:
+      app: thrive-devops-app # Label selector to find the application's Service
+  namespaceSelector:
+    matchNames:
+    - default # Only look for Services in the 'default' namespace
+  endpoints:
+  - port: http # Name of the port defined in the application's Service
+    path: /metrics # Path where metrics are exposed
+    interval: 15s # Scrape interval
