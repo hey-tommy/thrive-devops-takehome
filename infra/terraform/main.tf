@@ -62,8 +62,28 @@ module "eks" {
   vpc_id          = module.vpc.vpc_id
   subnet_ids      = module.vpc.public_subnets
 
+  authentication_mode = "API"
+
+  cluster_endpoint_public_access  = true
+  cluster_endpoint_private_access = false
+
   enable_irsa     = true
-  # Only public subnets are used to avoid NAT Gateway cost (see ADR-002)
+
+  access_entries = {
+    terraform_admin_user = {
+      principal_arn = "arn:aws:iam::329178086857:user/terraform-admin"
+      type          = "STANDARD" # For IAM users/roles
+
+      policy_associations = {
+        admin = {
+          policy_arn = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
+          access_scope = {
+            type = "cluster" # Grant access to the whole cluster
+          }
+        }
+      }
+    }
+  }
 
   eks_managed_node_group_defaults = {
     instance_types = ["t3.small"] # Free-tier eligible, low-cost

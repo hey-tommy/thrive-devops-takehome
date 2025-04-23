@@ -32,25 +32,31 @@ variable "env" {
   default     = "dev"
 }
 
+variable "eks_cluster_name" {
+  description = "Name of the EKS cluster"
+  type        = string
+  default     = "thrive-devops-eks"
+}
+
 # ECR Variables
 variable "ecr_repository_name" {
-  description = "Name for the ECR repository"
+  description = "The name of the ECR repository"
   type        = string
   default     = "thrive-devops-app"
 }
 
 variable "ecr_image_tag_mutability" {
-  description = "ECR image tag mutability (MUTABLE or IMMUTABLE)"
+  description = "The tag mutability setting for the repository. Must be one of: 'MUTABLE' or 'IMMUTABLE'"
   type        = string
   default     = "MUTABLE"
   validation {
     condition     = contains(["MUTABLE", "IMMUTABLE"], var.ecr_image_tag_mutability)
-    error_message = "Must be MUTABLE or IMMUTABLE."
+    error_message = "Tag mutability must be either MUTABLE or IMMUTABLE."
   }
 }
 
 variable "ecr_image_scan_on_push" {
-  description = "Enable scan on push for ECR repository"
+  description = "Indicates whether images are scanned after being pushed to the repository"
   type        = bool
   default     = true
 }
