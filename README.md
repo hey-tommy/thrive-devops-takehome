@@ -83,6 +83,28 @@ Commit and push changes to the `main` branch to trigger the GitHub Actions workf
 4.  Apply the base manifests (`k8s/base/`).
 5.  Apply the Argo Rollouts manifests (`k8s/rollouts/`) to initiate a canary deployment.
 
+### 3. Monitor the Rollout (Optional but Recommended)
+
+```bash
+kubectl argo rollouts get rollout thrive-devops-app-rollout -n default --watch
+```
+
+Wait for the rollout status to become `Healthy`.
+
+### Accessing the Deployed Application
+
+Once the infrastructure is provisioned and the application is successfully deployed via GitHub Actions or manual `kubectl apply`:
+
+1.  **Get the Load Balancer Hostname:** The application is exposed externally using a Kubernetes Service of type `LoadBalancer`. Find its assigned DNS hostname:
+    ```bash
+    kubectl get svc thrive-devops-app-service -n default -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'
+    ```
+2.  **Access in Browser:** Copy the hostname output from the previous command and paste it into your browser's address bar. Use `http` (not `https`, as TLS is not currently configured):
+    ```
+    http://<EXTERNAL-HOSTNAME>
+    ```
+    You should see the "Hello World!" message from the Node.js application.
+
 ### 3. Accessing Monitoring (Grafana)
 
 Once the `kube-prometheus-stack` is deployed (part of the Terraform infrastructure setup), you can access the Grafana dashboard locally:
@@ -97,18 +119,6 @@ Once the `kube-prometheus-stack` is deployed (part of the Terraform infrastructu
     *   **Password:** `prom-operator` (This is the default, retrieve the current password if needed: `kubectl get secret thrive-monitoring-grafana -n monitoring -o jsonpath='{.data.admin-password}' | base64 --decode`)
 
 Explore the pre-configured dashboards, adjusting the time range in the top-right corner if needed (e.g., to "Last 1 hour").
-
-### 3. Accessing the Application
-
-Once the rollout is complete, the application is exposed via a **Kubernetes** Service of type `LoadBalancer`.
-
-```bash
-# Get the Load Balancer URL
-kubectl get service thrive-devops-app-service -n default -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'
-
-# Note: It may take a few minutes for the Load Balancer to provision and the DNS to propagate.
-# Access the URL in your browser.
-```
 
 ---
 
