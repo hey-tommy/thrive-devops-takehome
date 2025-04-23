@@ -98,8 +98,8 @@ module "eks" {
       name           = "default"
       instance_types = ["t3.small"]
       min_size       = 1
-      max_size       = 2
-      desired_size   = 1
+      max_size       = 3
+      desired_size   = 2
       subnet_ids     = module.vpc.public_subnets
     }
   }

@@ -1,0 +1,11 @@
+# Helm Values for kube-prometheus-stack
+#
+# See full defaults: https://github.com/prometheus-community/helm-charts/blob/main/charts/kube-prometheus-stack/values.yaml
+
+# For demo purposes, disable persistence to avoid PV setup.
+# Dashboards/config will be lost if Grafana pod restarts.
+grafana:
+  persistence:
+    enabled: false
+
+# Other components (prometheus, alertmanager, nodeExporter, kubeStateMetrics) use defaults.

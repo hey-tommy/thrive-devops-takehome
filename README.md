@@ -73,21 +73,30 @@ aws eks update-kubeconfig --region $(terraform output -raw aws_region) --name $(
 kubectl get nodes
 ```
 
-### 2. Deploy Application (CI/CD)
+### 2. Deploy Application (via GitHub Actions)
 
-The application deployment is automated via the **GitHub Actions** workflow defined in `.github/workflows/cicd.yaml`.
+Commit and push changes to the `main` branch to trigger the GitHub Actions workflow (`.github/workflows/deploy.yaml`). This workflow will:
 
-1.  **Commit & Push**: Commit any changes to the application (`app/`), **Dockerfile**, or **Kubernetes** manifests (`k8s/`).
-2.  **Trigger**: Push the commit(s) to the `main` branch of your **GitHub** repository.
-3.  **Workflow Execution**: The **GitHub Actions** workflow will automatically:
-    *   Check out the code.
-    *   Configure **AWS** credentials using OIDC.
-    *   Log in to **Amazon ECR**.
-    *   Build a multi-platform **Docker** image (`linux/amd64`, `linux/arm64`).
-    *   Push the image to **ECR** tagged with the Git SHA and `latest`.
-    *   Update the `k8s/rollouts/app-rollout.yaml` manifest with the new image tag (Git SHA).
-    *   Apply the updated manifest to the **EKS** cluster using `kubectl apply`.
-    *   **Argo Rollouts** manages the canary deployment process based on the `app-rollout.yaml` strategy.
+1.  Build the multi-arch Docker image for the Node.js application (`app/`).
+2.  Push the image to AWS ECR.
+3.  Update the Kubernetes manifests (`k8s/`) with the new image tag.
+4.  Apply the base manifests (`k8s/base/`).
+5.  Apply the Argo Rollouts manifests (`k8s/rollouts/`) to initiate a canary deployment.
+
+### 3. Accessing Monitoring (Grafana)
+
+Once the `kube-prometheus-stack` is deployed (part of the Terraform infrastructure setup), you can access the Grafana dashboard locally:
+
+1.  **Port-Forward:** Run the following command in your terminal:
+    ```bash
+    kubectl port-forward svc/thrive-monitoring-grafana 3000:80 -n monitoring
+    ```
+2.  **Access URL:** Open [http://localhost:3000](http://localhost:3000) in your web browser.
+3.  **Login:**
+    *   **Username:** `admin`
+    *   **Password:** `prom-operator` (This is the default, retrieve the current password if needed: `kubectl get secret thrive-monitoring-grafana -n monitoring -o jsonpath='{.data.admin-password}' | base64 --decode`)
+
+Explore the pre-configured dashboards, adjusting the time range in the top-right corner if needed (e.g., to "Last 1 hour").
 
 ### 3. Accessing the Application
 
@@ -103,15 +112,14 @@ kubectl get service thrive-devops-app-service -n default -o jsonpath='{.status.l
 
 ---
 
-## 🔄 Replication on a New AWS Account
+## 🔄 Replicating the Setup
 
-To deploy this project on a *different* **AWS** account, follow these steps:
-
+To replicate this setup on a different AWS account:
 1.  **Prerequisites**: Ensure the new account has the necessary tools installed (AWS CLI, Terraform, kubectl, Git) and credentials configured.
 2.  **Fork & Clone**: Fork this repository to your own **GitHub** account and clone it locally.
 3.  **Update Account-Specific Values**: Modify the following files with the new **AWS** Account ID:
     *   `infra/terraform/main.tf`: Update the `principal_arn` for `aws_eks_access_entry.terraform_admin` and `aws_eks_access_entry.github_actions`.
-    *   `.github/workflows/cicd.yaml`: Update the `role-to-assume` ARN with the new account ID.
+    *   `.github/workflows/deploy.yaml`: Update the `role-to-assume` ARN with the new account ID.
 4.  **Configure GitHub Actions OIDC**: In the *new* **AWS** account, set up an IAM OIDC identity provider for **GitHub Actions** and create the `GitHubActions-ThriveDevOpsRole` IAM role with the necessary trust policy pointing to *your* **GitHub** repository and the required permissions (ECR push/pull, EKS access). Refer to **GitHub** and **AWS** documentation for setting up OIDC.
 5.  **Run Terraform**: Navigate to `infra/terraform` and run `terraform init` and `terraform apply` using the credentials for the *new* **AWS** account.
 6.  **Configure `kubectl`**: Run `aws eks update-kubeconfig ...` using the Terraform outputs from the new account.
