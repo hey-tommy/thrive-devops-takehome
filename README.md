@@ -18,7 +18,7 @@ The core architecture consists of:
 - **Deployment Strategy**: Canary deployments orchestrated by **Argo Rollouts** on **Kubernetes**.
 - **CI/CD**: **GitHub Actions** pipeline automates Docker image builds (multi-arch) and **Kubernetes** manifest application.
 - **Monitoring**: (*Planned*) **Prometheus** and **Grafana** stack to be deployed via **Helm**/**Kubernetes** manifests.
-- **Secrets Management**: (*Planned*) **AWS Secrets Manager** integration using the **Kubernetes External Secrets** operator.
+- **Secrets Management**: Secrets synced from **AWS Secrets Manager** using the **Kubernetes External Secrets** operator via **IRSA**.
 
 Diagrams visualizing the infrastructure and deployment flow can be found in the `docs/diagrams/` directory (`system_architecture.png`).
 
@@ -132,8 +132,23 @@ To replicate this setup on a different AWS account:
     *   `.github/workflows/deploy.yaml`: Update the `role-to-assume` ARN with the new account ID.
 4.  **Configure GitHub Actions OIDC**: In the *new* **AWS** account, set up an IAM OIDC identity provider for **GitHub Actions** and create the `GitHubActions-ThriveDevOpsRole` IAM role with the necessary trust policy pointing to *your* **GitHub** repository and the required permissions (ECR push/pull, EKS access). Refer to **GitHub** and **AWS** documentation for setting up OIDC.
 5.  **Run Terraform**: Navigate to `infra/terraform` and run `terraform init` and `terraform apply` using the credentials for the *new* **AWS** account.
-6.  **Configure `kubectl`**: Run `aws eks update-kubeconfig ...` using the Terraform outputs from the new account.
-7.  **Push to Trigger CI/CD**: Push a commit to the `main` branch of *your* forked repository to trigger the **GitHub Actions** workflow, which will build and deploy the application to the new EKS cluster.
+6.  **Create Secrets**: In the *new* **AWS** account's Secrets Manager, create the required secrets (e.g., `thrive-devops/demo-app-secrets`) that the application expects. The Kubernetes External Secrets operator will sync these.
+7.  **Configure `kubectl`**: Run `aws eks update-kubeconfig ...` using the Terraform outputs from the new account.
+8.  **Push to Trigger CI/CD**: Push a commit to the `main` branch of *your* forked repository to trigger the **GitHub Actions** workflow, which will build and deploy the application to the new EKS cluster.
+
+---
+
+## 🔐 Secrets Management
+
+Secrets are managed centrally in **AWS Secrets Manager** and securely injected into Kubernetes pods using the **Kubernetes External Secrets (KES)** operator.
+
+*   The KES operator is installed via Helm chart (managed by Terraform `helm_release`).
+*   An IAM Role for Service Account (IRSA) is configured, granting the KES operator's service account permissions to read secrets from AWS Secrets Manager.
+*   A `ClusterSecretStore` resource (`k8s/secrets/secret-store.yaml`) defines how KES connects to AWS Secrets Manager using the IRSA role.
+*   `ExternalSecret` resources (e.g., `k8s/secrets/external-secret.yaml`) specify which AWS secrets to sync and what Kubernetes `Secret` objects to create/update.
+*   The application deployment (`k8s/base/deployment.yaml`) references the Kubernetes `Secret` created by KES to load secrets as environment variables.
+
+See [ADR 006](docs/ADRs/006-kubernetes-external-secrets.md) for more details on the decision process.
 
 ---
 
@@ -142,14 +157,6 @@ To replicate this setup on a different AWS account:
 (*Planned*)
 
 This section will be updated with details on accessing **Grafana** dashboards and understanding the configured **Prometheus** alerts once implemented.
-
----
-
-## 🔐 Secrets Management
-
-(*Planned*)
-
-Secrets management using **AWS Secrets Manager** and the **Kubernetes External Secrets** operator is planned but not yet implemented. Configuration details will be added here upon completion.
 
 ---
 
@@ -174,7 +181,7 @@ Further decisions and trade-offs will be documented in `docs/ADRs/`.
 | Core Infrastructure   | ✅ Complete   |
 | CI/CD Pipeline        | ✅ Complete   |
 | Monitoring + Alerts   | ⏳ Upcoming   |
-| Secrets Management    | ⏳ Upcoming   |
+| Secrets Management    | ✅ Complete   |
 | Bonus Features (TLS)  | ⏳ Upcoming   |
 | Polish & Docs         | ✍️ Ongoing    |
 

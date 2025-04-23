@@ -191,21 +191,102 @@ module "ecr" {
   # Single-repo config: supported in both v1.x and v2.x
 }
 
-// --- Output Stubs ---
+# --- ECR Repository ---
+resource "aws_ecr_repository" "app_repo" {
+  name = "${var.project_name}-app"
+  tags = var.tags
+}
+
+# --- IAM Role for External Secrets (IRSA) ---
+
+data "aws_iam_policy_document" "external_secrets_assume_role_policy" {
+  statement {
+    actions = ["sts:AssumeRoleWithWebIdentity"]
+    effect  = "Allow"
+
+    principals {
+      type        = "Federated"
+      identifiers = [module.eks.oidc_provider_arn]
+    }
+
+    # Condition specific to the external-secrets service account in the external-secrets namespace
+    # Adjust namespace/serviceAccountName if installing KES differently
+    condition {
+      test     = "StringEquals"
+      variable = "${module.eks.oidc_provider}:sub"
+      values   = ["system:serviceaccount:external-secrets:external-secrets"]
+    }
+    # Optional: Condition for audience if needed, usually 'sts.amazonaws.com'
+    # condition {
+    #   test     = "StringEquals"
+    #   variable = "${module.eks.oidc_provider}:aud"
+    #   values   = ["sts.amazonaws.com"]
+    # }
+  }
+}
+
+resource "aws_iam_role" "external_secrets_role" {
+  name               = "${var.project_name}-external-secrets-role"
+  assume_role_policy = data.aws_iam_policy_document.external_secrets_assume_role_policy.json
+  tags = merge(var.tags, {
+    Name = "${var.project_name}-external-secrets-role"
+  })
+}
+
+# Define the policy granting access to Secrets Manager
+# Keep this minimal - only GetSecretValue is strictly needed for basic operation
+# kms:Decrypt is needed if secrets use a Customer Managed Key (CMK)
+data "aws_iam_policy_document" "external_secrets_policy_doc" {
+  statement {
+    actions = [
+      "secretsmanager:GetSecretValue",
+      "secretsmanager:DescribeSecret" # Useful for finding secrets by tags/name
+      # "kms:Decrypt" # Add if using CMKs
+    ]
+    effect    = "Allow"
+    resources = ["*"] # Scope down if possible, e.g., to secrets with specific tags or ARN patterns
+  }
+}
+
+resource "aws_iam_policy" "external_secrets_policy" {
+  name        = "${var.project_name}-external-secrets-policy"
+  description = "Allows External Secrets Operator to access Secrets Manager"
+  policy      = data.aws_iam_policy_document.external_secrets_policy_doc.json
+}
+
+resource "aws_iam_role_policy_attachment" "external_secrets_attach" {
+  role       = aws_iam_role.external_secrets_role.name
+  policy_arn = aws_iam_policy.external_secrets_policy.arn
+}
+
+# --- Output Stubs ---
 
 output "vpc_id" {
   description = "VPC ID for EKS and other resources"
   value       = module.vpc.vpc_id
 }
 
+output "public_subnets" {
+  description = "List of public subnet IDs"
+  value       = module.vpc.public_subnets
+}
+
+output "eks_cluster_endpoint" {
+  description = "EKS Cluster API Endpoint"
+  value       = module.eks.cluster_endpoint
+}
+
+output "eks_cluster_oidc_issuer_url" {
+  description = "EKS Cluster OIDC Issuer URL"
+  value       = module.eks.oidc_provider
+}
+
 output "eks_cluster_name" {
-  description = "EKS cluster name"
+  description = "EKS Cluster Name"
   value       = module.eks.cluster_name
 }
 
-output "ecr_repository_url" {
-  description = "ECR repo URL for CI/CD image pushes"
-  value       = module.ecr.repository_url
-}
-
-// --- End main.tf ---
+# output "ecr_repository_url" {
+#   description = "URL of the ECR repository"
+#   value       = aws_ecr_repository.app_repo.repository_url
+# }

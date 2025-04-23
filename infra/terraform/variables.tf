@@ -8,6 +8,22 @@ variable "aws_region" {
   }
 }
 
+variable "project_name" {
+  description = "Base name for resources (e.g., EKS cluster, roles)"
+  type        = string
+  default     = "thrive-devops"
+}
+
+variable "tags" {
+  description = "Common tags to apply to all resources"
+  type        = map(string)
+  default = {
+    Project     = "ThriveTakeHome"
+    Environment = "Demo"
+    ManagedBy   = "Terraform"
+  }
+}
+
 variable "vpc_name" {
   description = "Name prefix for VPC resources"
   type        = string
