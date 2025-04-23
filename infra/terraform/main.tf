@@ -120,6 +120,48 @@ module "iam" {
   # Add IRSA roles as needed for External Secrets, etc.
 }
 
+# --- EKS Access Entries ---
+# Define the access entry for the Terraform user
+resource "aws_eks_access_entry" "terraform_admin" {
+  cluster_name  = module.eks.cluster_name # Reference EKS module output
+  principal_arn = "arn:aws:iam::329178086857:user/terraform-admin"
+  type          = "STANDARD" # Optional, but explicit
+  depends_on = [
+    module.eks
+  ]
+}
+
+# Associate the admin policy with the Terraform user's access entry
+resource "aws_eks_access_policy_association" "terraform_admin" {
+  cluster_name  = module.eks.cluster_name # Reference EKS module output
+  principal_arn = aws_eks_access_entry.terraform_admin.principal_arn # Reference the entry
+  policy_arn    = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
+  access_scope {
+    type = "cluster"
+  }
+}
+
+# Define the access entry for the GitHub Actions role
+resource "aws_eks_access_entry" "github_actions" {
+  cluster_name  = module.eks.cluster_name # Reference EKS module output
+  principal_arn = "arn:aws:iam::329178086857:role/GitHubActions-ThriveDevOpsRole"
+  type          = "STANDARD" # Optional, but explicit
+  depends_on = [
+    module.eks
+  ]
+}
+
+# Associate the admin policy with the GitHub Actions role's access entry
+resource "aws_eks_access_policy_association" "github_actions" {
+  cluster_name  = module.eks.cluster_name # Reference EKS module output
+  principal_arn = aws_eks_access_entry.github_actions.principal_arn # Reference the entry
+  policy_arn    = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
+  access_scope {
+    type = "cluster"
+  }
+}
+
+# --- ECR ---
 module "ecr" {
   source  = "terraform-aws-modules/ecr/aws"
   version = "~> 2.0"
