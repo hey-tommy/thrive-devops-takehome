@@ -6,10 +6,10 @@ metadata:
   labels:
     app: thrive-devops-app # Consistent label
 spec:
-  type: ClusterIP # Internal traffic only initially
   selector:
     app: thrive-devops-app # Selects pods with this label
   ports:
     - protocol: TCP
-      port: 80 # Port the service listens on
-      targetPort: 3000 # Port the container listens on (Node.js app)
+      port: 80 # Port the Load Balancer listens on
+      targetPort: 3000 # Port the container exposes
+  type: LoadBalancer # Change from ClusterIP
