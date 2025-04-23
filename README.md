@@ -17,7 +17,7 @@ The core architecture consists of:
 - **Application**: A simple Node.js "hello-world" application containerized using **Docker**.
 - **Deployment Strategy**: Canary deployments orchestrated by **Argo Rollouts** on **Kubernetes**.
 - **CI/CD**: **GitHub Actions** pipeline automates Docker image builds (multi-arch) and **Kubernetes** manifest application.
-- **Monitoring**: (*Planned*) **Prometheus** and **Grafana** stack to be deployed via **Helm**/**Kubernetes** manifests.
+- **Monitoring**: **Prometheus** and **Grafana** stack deployed via **Helm** managed by **Terraform**.
 - **Secrets Management**: Secrets synced from **AWS Secrets Manager** using the **Kubernetes External Secrets** operator via **IRSA**.
 
 Diagrams visualizing the infrastructure and deployment flow can be found in the `docs/diagrams/` directory (`system_architecture.png`).
@@ -122,19 +122,15 @@ Explore the pre-configured dashboards, adjusting the time range in the top-right
 
 ---
 
-## 🔄 Replicating the Setup
+## 📊 Monitoring & Alerting
 
-To replicate this setup on a different AWS account:
-1.  **Prerequisites**: Ensure the new account has the necessary tools installed (AWS CLI, Terraform, kubectl, Git) and credentials configured.
-2.  **Fork & Clone**: Fork this repository to your own **GitHub** account and clone it locally.
-3.  **Update Account-Specific Values**: Modify the following files with the new **AWS** Account ID:
-    *   `infra/terraform/main.tf`: Update the `principal_arn` for `aws_eks_access_entry.terraform_admin` and `aws_eks_access_entry.github_actions`.
-    *   `.github/workflows/deploy.yaml`: Update the `role-to-assume` ARN with the new account ID.
-4.  **Configure GitHub Actions OIDC**: In the *new* **AWS** account, set up an IAM OIDC identity provider for **GitHub Actions** and create the `GitHubActions-ThriveDevOpsRole` IAM role with the necessary trust policy pointing to *your* **GitHub** repository and the required permissions (ECR push/pull, EKS access). Refer to **GitHub** and **AWS** documentation for setting up OIDC.
-5.  **Run Terraform**: Navigate to `infra/terraform` and run `terraform init` and `terraform apply` using the credentials for the *new* **AWS** account.
-6.  **Create Secrets**: In the *new* **AWS** account's Secrets Manager, create the required secrets (e.g., `thrive-devops/demo-app-secrets`) that the application expects. The Kubernetes External Secrets operator will sync these.
-7.  **Configure `kubectl`**: Run `aws eks update-kubeconfig ...` using the Terraform outputs from the new account.
-8.  **Push to Trigger CI/CD**: Push a commit to the `main` branch of *your* forked repository to trigger the **GitHub Actions** workflow, which will build and deploy the application to the new EKS cluster.
+The `kube-prometheus-stack` Helm chart, managed via Terraform, deploys Prometheus and Grafana for monitoring and alerting.
+
+Key features:
+
+*   **Metrics:** Collects node-level (CPU, memory, disk, network) and cluster-level metrics. Also scrapes custom application metrics from the `/metrics` endpoint exposed by the Node.js app.
+*   **Alerting:** Basic alerting rules are configured in Prometheus (e.g., Node CPU/Memory high, Pod CrashLooping). Alerts are routed to Alertmanager, which is configured with a placeholder Slack receiver (`slack-default`) using a dummy webhook URL.
+*   **Dashboards:** Access Grafana via the instructions in the [Accessing Monitoring (Grafana)](#accessing-monitoring-grafana) section above.
 
 ---
 
@@ -152,25 +148,19 @@ See [ADR 006](docs/ADRs/006-kubernetes-external-secrets.md) for more details on 
 
 ---
 
-## 📊 Monitoring & Alerting
+## 🔄 Replicating the Setup
 
-(*Planned*)
-
-This section will be updated with details on accessing **Grafana** dashboards and understanding the configured **Prometheus** alerts once implemented.
-
----
-
-## 📝 Design Decisions & Trade-offs
-
-Key decisions include:
-
--   **EKS over self-managed Kubernetes**: Chosen for reduced operational overhead, leveraging AWS managed control plane.
--   **Argo Rollouts**: Selected for enabling advanced deployment strategies like canary releases with automated analysis (planned), improving deployment safety over standard Kubernetes Deployments.
--   **GitHub Actions**: Utilized for its tight integration with GitHub repositories and native OIDC support for secure AWS authentication.
--   **Terraform Modules**: Leveraged community modules (`terraform-aws-modules`) for VPC and EKS to accelerate provisioning and adhere to best practices, trading off some granular control for speed and reliability.
--   **Multi-Arch Docker Builds**: Implemented (`linux/amd64`, `linux/arm64`) to ensure compatibility with diverse EKS node architectures (e.g., Graviton instances) after encountering initial `ErrImagePull` issues.
-
-Further decisions and trade-offs will be documented in `docs/ADRs/`.
+To replicate this setup on a different AWS account:
+1.  **Prerequisites**: Ensure the new account has the necessary tools installed (AWS CLI, Terraform, kubectl, Git) and credentials configured.
+2.  **Fork & Clone**: Fork this repository to your own **GitHub** account and clone it locally.
+3.  **Update Account-Specific Values**: Modify the following files with the new **AWS** Account ID:
+    *   `infra/terraform/main.tf`: Update the `principal_arn` for `aws_eks_access_entry.terraform_admin` and `aws_eks_access_entry.github_actions`.
+    *   `.github/workflows/deploy.yaml`: Update the `role-to-assume` ARN with the new account ID.
+4.  **Configure GitHub Actions OIDC**: In the *new* **AWS** account, set up an IAM OIDC identity provider for **GitHub Actions** and create the `GitHubActions-ThriveDevOpsRole` IAM role with the necessary trust policy pointing to *your* **GitHub** repository and the required permissions (ECR push/pull, EKS access). Refer to **GitHub** and **AWS** documentation for setting up OIDC.
+5.  **Run Terraform**: Navigate to `infra/terraform` and run `terraform init` and `terraform apply` using the credentials for the *new* **AWS** account.
+6.  **Create Secrets**: In the *new* **AWS** account's Secrets Manager, create the required secrets (e.g., `thrive-devops/demo-app-secrets`) that the application expects. The Kubernetes External Secrets operator will sync these.
+7.  **Configure `kubectl`**: Run `aws eks update-kubeconfig ...` using the Terraform outputs from the new account.
+8.  **Push to Trigger CI/CD**: Push a commit to the `main` branch of *your* forked repository to trigger the **GitHub Actions** workflow, which will build and deploy the application to the new EKS cluster.
 
 ---
 
@@ -180,7 +170,7 @@ Further decisions and trade-offs will be documented in `docs/ADRs/`.
 | --------------------- | ------------- |
 | Core Infrastructure   | ✅ Complete   |
 | CI/CD Pipeline        | ✅ Complete   |
-| Monitoring + Alerts   | ⏳ Upcoming   |
+| Monitoring + Alerts   | ✅ Complete   |
 | Secrets Management    | ✅ Complete   |
 | Bonus Features (TLS)  | ⏳ Upcoming   |
 | Polish & Docs         | ✍️ Ongoing    |

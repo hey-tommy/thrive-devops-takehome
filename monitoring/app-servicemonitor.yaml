@@ -2,7 +2,7 @@ apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
   name: thrive-devops-app-monitor # Name for the ServiceMonitor
-  namespace: default # Namespace where the application Service is running
+  namespace: monitoring # Namespace where Prometheus is running
   labels:
     release: thrive-monitoring # IMPORTANT: Label must match the Helm release name for Prometheus to discover it
 spec:
