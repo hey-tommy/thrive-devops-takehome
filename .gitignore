@@ -79,6 +79,11 @@ coverage/
 **/prometheus/data/
 **/grafana/data/
 
-# Secrets - never commit actual secrets
-**/k8s/secrets/*.yaml
+# Do NOT commit **actual** Kubernetes Secret manifests (contain sensitive values)
+**/k8s/secrets/secret*.yaml
+**/k8s/secrets/**/secret*.yaml
+
+# Allow ExternalSecrets and SecretStores — these are safe and required
+!**/k8s/secrets/external-secret.yaml
+!**/k8s/secrets/secret-store.yaml
 !**/k8s/secrets/example-*.yaml
