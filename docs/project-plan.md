@@ -4,6 +4,25 @@ This plan breaks the project into clear, layered phases — from requirement ana
 
 ---
 
+## Structural Summary: Project Flow Overview
+
+| Phase | Step | Name                                       | Purpose                                                          |
+| ----- | ---- | ------------------------------------------ | ---------------------------------------------------------------- |
+| 1️⃣    | 0    | Meta-Planning                              | Decide how to decide                                             |
+|       | 1A   | Requirements Analysis                      | Identify explicit + implicit requirements; detect contradictions |
+|       | 1B   | Define Project Layout & Conventions        | Establish baseline repo structure, naming, and delivery intent   |
+|       | 2A   | Architecture Branch Mapping                | Draft decision tree of viable infra paths                        |
+|       | 2B   | Dependency & Implication Mapping           | Re-structure tree based on dependencies and constraints          |
+|       | 3A   | Architecture Path Selection                | Evaluate top paths and commit                                    |
+|       | 3B   | Design Validation & Feasibility Checkpoint | Confirm requirements coverage, flag risk, define fallback plans  |
+|       | 3C   | Finalize Project Layout & Tooling          | Lock directories, tooling, and file structure based on design    |
+| 2️⃣    | 4    | Execution Planning                         | Define build sequence, stub order, time allocation               |
+|       | 5    | Execution & Delivery                       | Build (create/execute/deploy Terraform, CI/CD, etc.)             |
+| 3️⃣   | 6    | Requirements Validation                    | Confirm all instructions fulfilled or explained                  |
+|       | 7    | Polish, Packaging & Narrative Integration  | Finalize deliverables, inject narrative, apply finishing polish  |
+
+---
+
 ## 🧠 Phase 1: Planning & Design
 
 ### 🧩 Step 0: Meta‑Planning  
@@ -72,7 +91,15 @@ Draft a **Decision Tree** capturing major branch points across infrastructure, o
 ### 🧩 Step 3A: Architecture Path Selection  
 
 Evaluate the decision tree and commit to a single architecture path.  
-- Document rationale for selected and rejected paths.  
+- Document rationale for selected and rejected paths.
+  - **Chosen Path:** Canary + EKS (Argo Rollouts)  
+  - **Rationale Summary:**  
+    - Progressive, metrics‑driven rollouts (phased weights, pauses, auto‑rollback)  
+    - Native Kubernetes CRDs: versioned, auditable, GitOps‑friendly  
+    - Seamless evolution into A/B testing via Argo experiments  
+    - High “wow” factor for reviewers, transferable MLOps/DevOps skill signal  
+    - Terraform + Helm + Argo stack showcases senior‑level orchestration expertise  
+  - **Why Not Blue‑Green or ALB‑only Canary:** see {insert ADR}.
 - Flag bonus items for potential stub/mimic if time-constrained.
 
 ---
@@ -82,14 +109,13 @@ Evaluate the decision tree and commit to a single architecture path.
 - **Primary objective:** Validate the selected architecture against the requirements checklist.
   - Confirm that each requirement is covered or explicitly deferred
   - Identify any mismatches before execution begins  
-- Use manual reasoning and/or LLM "red-team" prompts to ensure no requirement gaps, logic drift, or structural misalignment exist.  
+- Manually review and use LLM "red-team" prompts to ensure no requirement gaps, logic drift, or structural misalignment exist.  
 - Also reassess feasibility and risk:
   - Are we confident the selected path fits within time/resources?
   - What are the riskiest moving parts?
   - Can they be stubbed or mimicked if needed?
   - Create escape hatches or fallback paths proactively  
-- *Optional fib layer:* “Risk Log” — document top 2–3 risks with mitigation plans  
-
+  
 ---
 ### 🧩 Step 3C: Finalize Project Layout & Tooling  
 
@@ -180,7 +206,6 @@ Build GitHub Actions pipeline: build, tag, push to ECR, deploy to EKS via `kubec
   - ❌ Skipped (out of scope or blocked)  
 - Document mappings as a **“Requirements Traceability Matrix (RTM-lite)”** —  
   _“X was implemented via Y. If not, here's why.”_  
-- *Optional fib layer:* auto-verifier script (e.g., grep README headers against checklist IDs)
 
 ---
 
@@ -202,25 +227,6 @@ Build GitHub Actions pipeline: build, tag, push to ECR, deploy to EKS via `kubec
 - Consider adding:
   - `NOTES.md` or `CONTRIBUTING.md` for evaluator guidance  
   - “What we would have done” notes to narrate intent over scope
-
----
-
-## 📐 Structural Summary: Project Flow Overview
-
-| Phase | Step | Name                                       | Purpose                                                          |
-| ----- | ---- | ------------------------------------------ | ---------------------------------------------------------------- |
-| 1️⃣   | 0    | Meta-Planning                              | Decide how to decide                                             |
-|       | 1A   | Requirements Analysis                      | Identify explicit + implicit requirements; detect contradictions |
-|       | 1B   | Define Project Layout & Conventions        | Establish baseline repo structure, naming, and delivery intent   |
-|       | 2A   | Architecture Branch Mapping                | Draft decision tree of viable infra paths                        |
-|       | 2B   | Dependency & Implication Mapping           | Re-structure tree based on dependencies and constraints          |
-|       | 3A   | Architecture Path Selection                | Evaluate top paths and commit                                    |
-|       | 3B   | Design Validation & Feasibility Checkpoint | Confirm requirements coverage, flag risk, define fallback plans  |
-|       | 3C   | Finalize Project Layout & Tooling          | Lock directories, tooling, and file structure based on design    |
-| 2️⃣   | 4    | Execution Planning                         | Define build sequence, stub order, time allocation               |
-|       | 5    | Execution & Delivery                       | Build (create/execute/deploy Terraform, CI/CD, etc.)             |
-| 3️⃣   | 6    | Requirements Validation                    | Confirm all instructions fulfilled or explained                  |
-|       | 7    | Polish, Packaging & Narrative Integration  | Finalize deliverables, inject narrative, apply finishing polish  |
 
 ---
 
