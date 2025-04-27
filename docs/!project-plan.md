@@ -8,7 +8,7 @@ This plan breaks the project into clear, layered phases — from requirement ana
 
 | Phase | Step | Name                                       | Purpose                                                          |
 | ----- | ---- | ------------------------------------------ | ---------------------------------------------------------------- |
-| 1️⃣    | 0    | Meta-Planning                              | Decide how to decide                                             |
+|  1️⃣   | 0    | Meta-Planning                              | Decide how to decide                                             |
 |       | 1A   | Requirements Analysis                      | Identify explicit + implicit requirements; detect contradictions |
 |       | 1B   | Define Project Layout & Conventions        | Establish baseline repo structure, naming, and delivery intent   |
 |       | 2A   | Architecture Branch Mapping                | Draft decision tree of viable infra paths                        |
@@ -16,9 +16,9 @@ This plan breaks the project into clear, layered phases — from requirement ana
 |       | 3A   | Architecture Path Selection                | Evaluate top paths and commit                                    |
 |       | 3B   | Design Validation & Feasibility Checkpoint | Confirm requirements coverage, flag risk, define fallback plans  |
 |       | 3C   | Finalize Project Layout & Tooling          | Lock directories, tooling, and file structure based on design    |
-| 2️⃣    | 4    | Execution Planning                         | Define build sequence, stub order, time allocation               |
+|  2️⃣   | 4    | Execution Planning                         | Define build sequence, stub order, time allocation               |
 |       | 5    | Execution & Delivery                       | Build (create/execute/deploy Terraform, CI/CD, etc.)             |
-| 3️⃣   | 6    | Requirements Validation                    | Confirm all instructions fulfilled or explained                  |
+|  3️⃣   | 6    | Requirements Validation                    | Confirm all instructions fulfilled or explained                  |
 |       | 7    | Polish, Packaging & Narrative Integration  | Finalize deliverables, inject narrative, apply finishing polish  |
 
 ---
@@ -36,7 +36,7 @@ Decide how to decide. Establish framework structure, tone guidelines, assistant 
 - Extract explicit, implicit, and bonus requirements into a formal checklist.  
 - Treat “bonus” features as must-haves, but defer their implementation to later layers.  
 - Add a **Requirements → Implications matrix** to surface how each requirement impacts design.  
-- Identify contradictions (e.g., EKS billing vs. free-tier constraint) and document your mitigation stance.  
+- Identify contradictions (e.g., EKS billing vs. free-tier constraint) and document mitigation stance.  
 
 ---
 
@@ -249,3 +249,7 @@ Build GitHub Actions pipeline: build, tag, push to ECR, deploy to EKS via `kubec
 | 🔵 **Strategic Core**     | Monitoring, TLS, secrets mgmt       | Prioritized by signal-to-effort ratio  |
 | 🟡 **High-Signal Extras** | Health checks, rollback analysis    | Add only if core+value are complete    |
 | 🔴 **Optional Flair**     | “Wow” extras (e.g., career GPT bot) | Timeboxed to final 90 min if at all    |
+
+## 📊 Architectural Diagram
+
+![Architecture Diagram](../docs/diagrams/system_architecture.png)

@@ -1,21 +1,19 @@
 # ADR-004: Use of Terraform Modules
 
-**Status:** Accepted
-
 **Context:**
 
 The project requires provisioning significant AWS infrastructure, including a VPC, networking components (subnets, route tables, security groups), an EKS cluster, ECR repository, and associated IAM roles and policies using Terraform. Writing all these resources manually (`resource` blocks) provides granular control but is time-consuming and error-prone, requiring deep knowledge of each service's intricacies.
 
 **Decision:**
 
-We decided to leverage well-established, community-vetted **Terraform modules** from the public Terraform Registry for complex infrastructure components, specifically:
+Leverage well-established, community-vetted **Terraform modules** from the public Terraform Registry for complex infrastructure components, specifically:
 
 1.  `terraform-aws-modules/vpc/aws`: For creating the VPC, subnets, route tables, internet gateway, and security groups.
 2.  `terraform-aws-modules/eks/aws`: For provisioning the EKS control plane, managed node groups, and associated IAM roles/policies.
 
-We pinned specific versions of these modules in the Terraform configuration (`main.tf`) to ensure repeatable deployments and avoid unexpected changes from upstream module updates.
+Pin specific versions of these modules in the Terraform configuration (`main.tf`) to ensure repeatable deployments and avoid unexpected changes from upstream module updates.
 
-Other resources, like the ECR repository and specific IAM roles (e.g., for GitHub Actions OIDC), were defined directly using `resource` blocks as they were simpler or required specific customization not easily abstracted by a generic module.
+Define other resources, like the ECR repository and specific IAM roles (e.g., for GitHub Actions OIDC), directly using `resource` blocks when they are simpler or require specific customization not easily abstracted by a generic module.
 
 **Consequences:**
 

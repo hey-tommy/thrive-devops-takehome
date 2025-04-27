@@ -4,7 +4,7 @@
 
 Selected architecture path: **Canary + EKS using Argo Rollouts**
 
-This was not the simplest option — it was chosen to demonstrate progressive delivery maturity, future extensibility, and Terraform orchestration capability.
+This path, while not the simplest, demonstrates progressive delivery maturity, future extensibility, and Terraform orchestration capability.
 
 ---
 
@@ -12,7 +12,7 @@ This was not the simplest option — it was chosen to demonstrate progressive de
 
 - **Limited future extensibility**: Blue-Green deployment is binary and rigid. It lacks phased rollout semantics and does not support nuanced traffic control.
 - **Poor reusability**: Much of the configuration (e.g., CodeDeploy setup, target group juggling) is non-transferable to Canary or K8s patterns.
-- **Low “wow” factor**: Blue-Green is seen as safe but conservative. In a portfolio take-home context, it under-delivers on signaling strength.
+- **Low “wow” factor**: Blue-Green offers safe but conservative optics. In a portfolio take-home context, it under-delivers on signaling strength.
 
 ---
 

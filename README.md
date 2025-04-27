@@ -20,7 +20,10 @@ The core architecture consists of:
 - **Monitoring**: **Prometheus** and **Grafana** stack deployed via **Helm** managed by **Terraform**.
 - **Secrets Management**: Secrets synced from **AWS Secrets Manager** using the **Kubernetes External Secrets** operator via **IRSA**.
 
-Diagrams visualizing the infrastructure and deployment flow can be found in the `docs/diagrams/` directory (`system_architecture.png`).
+
+This diagram outlines the key components and interactions within the deployed infrastructure:
+
+![Architecture Diagram](./docs/diagrams/system_architecture.png)
 
 ---
 
@@ -118,7 +121,9 @@ Once the `kube-prometheus-stack` is deployed (part of the Terraform infrastructu
     *   **Username:** `admin`
     *   **Password:** `prom-operator` (This is the default, retrieve the current password if needed: `kubectl get secret thrive-monitoring-grafana -n monitoring -o jsonpath='{.data.admin-password}' | base64 --decode`)
 
-Explore the pre-configured dashboards, adjusting the time range in the top-right corner if needed (e.g., to "Last 1 hour").
+    > **Note:** These are default credentials. In a production environment, change the default password immediately after deployment. Ideally, manage the Grafana admin password using a secure method like the implemented Kubernetes External Secrets integration with AWS Secrets Manager.
+
+4.  Explore the pre-configured dashboards, adjusting the time range in the top-right corner if needed (e.g., to "Last 1 hour").
 
 ---
 

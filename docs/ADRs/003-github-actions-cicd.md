@@ -1,7 +1,5 @@
 # ADR-003: GitHub Actions for CI/CD
 
-**Status:** Accepted
-
 **Context:**
 
 This project requires an automated Continuous Integration and Continuous Deployment (CI/CD) pipeline to build the application's Docker image, push it to a container registry (AWS ECR), and deploy it to the Kubernetes cluster (AWS EKS). Key requirements include secure authentication to AWS, ease of integration with the source code repository, and efficiency for a time-constrained assignment. The repository is hosted on GitHub.
@@ -10,9 +8,9 @@ Alternatives considered included GitLab CI, Jenkins, CircleCI, and AWS CodePipel
 
 **Decision:**
 
-We chose **GitHub Actions** as the CI/CD platform for this project.
+The selected CI/CD platform for this project is **GitHub Actions**.
 
-The decision was based on the following factors:
+This decision was based on the following factors:
 
 1.  **Native Integration:** GitHub Actions is tightly integrated with GitHub repositories, providing a seamless experience for triggering workflows based on code pushes, pull requests, etc., directly alongside the source code.
 2.  **OIDC Authentication:** GitHub Actions offers robust support for OpenID Connect (OIDC), enabling secure, keyless authentication to AWS services like ECR and EKS. This avoids the need to manage long-lived AWS access keys as GitHub secrets.

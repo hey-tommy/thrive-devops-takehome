@@ -1,7 +1,5 @@
 # ADR-005: Multi-Architecture Docker Builds
 
-**Status:** Accepted
-
 **Context:**
 
 The development environment (likely macOS on Apple Silicon - arm64) differs from the target deployment environment (AWS EKS worker nodes using EC2 instances, potentially amd64 or arm64, but initially amd64 in this project). Building a Docker image solely for the developer's architecture (arm64) can lead to runtime failures (`ErrImagePull` or `exec format error`) when attempting to run the container on a different architecture (amd64).
@@ -10,9 +8,9 @@ During initial deployment attempts, pods running on the amd64 EKS nodes failed t
 
 **Decision:**
 
-We decided to implement **multi-architecture Docker builds** using `docker buildx` within the GitHub Actions workflow.
+Implement **multi-architecture Docker builds** using `docker buildx` within the GitHub Actions workflow.
 
-Specifically, the `docker/build-push-action` is configured with `platforms: linux/amd64,linux/arm64`. This instructs Docker Buildx to build image variants for both common Linux architectures and push them together as a single manifest list to ECR.
+Specifically, configure the `docker/build-push-action` with `platforms: linux/amd64,linux/arm64`. This instructs Docker Buildx to build image variants for both common Linux architectures and push them together as a single manifest list to ECR.
 
 When Kubernetes (via the container runtime) pulls the image (`<repo>:<tag>`), it automatically selects the image variant matching the node's architecture from the manifest list.
 

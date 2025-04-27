@@ -1,12 +1,8 @@
 # ADR 006: Kubernetes Secrets Management with External Secrets Operator
 
-**Date:** 2025-04-23
-
-**Status:** Accepted
-
 ## Context
 
-The application requires access to sensitive information (e.g., API keys, database credentials) stored securely outside the Kubernetes cluster. Hardcoding secrets in configuration files or Kubernetes manifests is insecure and inflexible. A mechanism is needed to inject secrets from a trusted external source (AWS Secrets Manager) into Kubernetes pods securely.
+The application requires access to sensitive information (e.g., API keys, database credentials) stored securely outside the Kubernetes cluster. Hardcoding secrets in configuration files or Kubernetes manifests is insecure and inflexible. A mechanism must inject secrets from a trusted external source (AWS Secrets Manager) into Kubernetes pods securely.
 
 ## Decision Drivers
 
@@ -25,7 +21,7 @@ The application requires access to sensitive information (e.g., API keys, databa
 
 ## Decision
 
-We chose to implement the **Kubernetes External Secrets (KES) Operator** integrated with **AWS Secrets Manager** using **IAM Roles for Service Accounts (IRSA)**.
+Implement the **Kubernetes External Secrets (KES) Operator** integrated with **AWS Secrets Manager** using **IAM Roles for Service Accounts (IRSA)**.
 
 ## Rationale
 
