@@ -52,14 +52,13 @@ This repo is submission-ready by default. All documentation, configuration, and 
 
 #### 📁 Initial Directory Structure
 ```bash
-.
+thrive-devops-takehome/
 ├── infra/                   # Infrastructure-as-Code (Terraform)
 │   └── terraform/
 ├── app/                     # Application Dockerfile and runtime files
 ├── docs/                    # Documentation
 │   ├── ADRs/                # Architecture Decision Records (RFC-style)
 │   └── diagrams/            # Mermaid, draw.io, or PNG architecture sketches
-├── scripts/                 # Optional shell or Python automation helpers
 ├── .github/                 # GitHub Actions workflows (location reserved)
 │   └── workflows/
 ├── README.md
@@ -99,7 +98,7 @@ Evaluate the decision tree and commit to a single architecture path.
     - Seamless evolution into A/B testing via Argo experiments  
     - High “wow” factor for reviewers, transferable MLOps/DevOps skill signal  
     - Terraform + Helm + Argo stack showcases senior‑level orchestration expertise  
-  - **Why Not Blue‑Green or ALB‑only Canary:** see {insert ADR}.
+  - **Why Not Blue‑Green or ALB‑only Canary:** see [ADR-001](ADRs/001-canary-eks-rationale.md).
 - Flag bonus items for potential stub/mimic if time-constrained.
 
 ---
@@ -125,12 +124,42 @@ This step finalizes the directory and tooling layout based on the confirmed arch
 
 #### 📁 Finalized Directory Structure
 ```bash
-.
-├── k8s/                     # Kubernetes manifests
-│   ├── base/                # Core deployment specs
-│   ├── rollouts/            # Argo Rollouts-specific configs
-│   └── secrets/             # ExternalSecrets and K8s Secret CRs
-├── monitoring/              # Prometheus rules, Grafana dashboard, alertmanager config
+thrive-devops-takehome/
+├── infra/                      # Infrastructure-as-Code
+│   └── terraform/              # Terraform modules (VPC, EKS, IAM, etc.)
+│       ├── main.tf             # Entry point for provisioning
+│       ├── variables.tf        # Input variables
+│       ├── outputs.tf          # Output values for pipeline integration
+│       └── ...                 # Module files (split as needed)
+│
+├── k8s/                        # Kubernetes manifests
+│   ├── base/                   # Core deployment: app, service, ingress
+│   ├── rollouts/               # Argo Rollouts CRDs + AnalysisTemplates
+│   └── secrets/                # ExternalSecret + fallback k8s Secret specs
+│
+├── monitoring/                 # Observability stack config
+│   ├── prometheus-rules/       # Custom alert rules
+│   ├── grafana-dashboards/     # Optional JSON dashboards
+│   └── alertmanager/           # Alertmanager config for Slack webhook
+│
+├── app/                        # Application code and containerization
+│   ├── Dockerfile              # Multi-stage build
+│   ├── server.js               # Basic Node.js hello world app
+│   └── healthz/                # Health probe routes/scripts
+│
+├── .github/                    # CI/CD workflows
+│   └── workflows/              # GitHub Actions YAML pipelines
+│       └── deploy.yml
+│
+├── docs/                       # Planning, architecture, and rationale
+│   ├── ADRs/                   # Architecture Decision Records
+│   ├── diagrams/               # System diagrams (.drawio, .png, or .mmd)
+│   ├── 0-project-plan.md        # Main project plan
+│   └── ...                     # Planning markdowns (e.g., validation, risk log)
+│
+├── .env.example                # Safe environment variable template
+├── README.md                   # Main project readme with usage & diagrams
+├── EVALUATOR.md                # Walkthrough for reviewers <- start here
 ```
 
 ---
@@ -252,4 +281,4 @@ Build GitHub Actions pipeline: build, tag, push to ECR, deploy to EKS via `kubec
 
 ## 📊 Architectural Diagram
 
-![Architecture Diagram](../docs/diagrams/system_architecture.png)
+![Architecture Diagram](diagrams/system_architecture.png)

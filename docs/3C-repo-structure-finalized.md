@@ -30,19 +30,15 @@ thrive-devops-takehome/
 │   └── workflows/              # GitHub Actions YAML pipelines
 │       └── deploy.yml
 │
-├── scripts/                    # Helper CLI scripts (e.g. bootstrap, log dump)
-│   └── deploy.sh
-│
 ├── docs/                       # Planning, architecture, and rationale
 │   ├── ADRs/                   # Architecture Decision Records
 │   ├── diagrams/               # System diagrams (.drawio, .png, or .mmd)
+│   ├── 0-project-plan.md        # Main project plan
 │   └── ...                     # Planning markdowns (e.g., validation, risk log)
 │
 ├── .env.example                # Safe environment variable template
 ├── README.md                   # Main project readme with usage & diagrams
-├── CONTRIBUTING.md             # Setup + evaluation guide (optional)
-├── EVALUATOR.md                # Optional context/walkthrough for reviewers
-├── NOTES.md                    # Internal dev log (not intended for evaluation)
+├── EVALUATOR.md                # Walkthrough for reviewers <- start here
 ```
 
 ---

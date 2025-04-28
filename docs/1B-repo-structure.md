@@ -13,10 +13,12 @@ thrive-devops-takehome/
 │   ├── rollouts/            # Argo Rollouts CRs and templates
 │   └── secrets/             # Secret manifests (ExternalSecrets, K8s Secrets)
 ├── monitoring/              # Prometheus rules, Grafana dashboards, alertmanager config
+│   └── helm-values.yaml
 ├── app/                     # App Dockerfile, source, health probe scripts
+│   ├── Dockerfile
+│   └── server.js
 ├── .github/                 # GitHub Actions workflows
 │   └── workflows/
-├── scripts/                 # CLI helper scripts (setup, deploy, logs)
 ├── docs/                    # Documentation artifacts
 │   ├── ADRs/                # Architecture Decision Records
 │   └── diagrams/            # System diagrams (.drawio, .png, or .mmd)
